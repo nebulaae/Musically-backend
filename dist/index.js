@@ -29,12 +29,18 @@ const app = (0, express_1.default)();
 const PORT = process.env.PORT || 3002;
 // Middleware
 app.use((0, cors_1.default)({
-    origin: process.env.FRONTEND_URL || 'http://3000-idx-musically-1743873794879.cluster-oayqgyglpfgseqclbygurw4xd4.cloudworkstations.dev',
+    origin: process.env.FRONTEND_URL || 'https://3000-idx-musically-1743873794879.cluster-oayqgyglpfgseqclbygurw4xd4.cloudworkstations.dev',
     credentials: true
 }));
 app.use(express_1.default.json());
 app.use(express_1.default.urlencoded({ extended: true }));
 app.use((0, cookie_parser_1.default)());
+// CORS
+app.use((req, res, next) => {
+    res.header("Access-Control-Allow-Origin", "https://3000-idx-musically-1743873794879.cluster-oayqgyglpfgseqclbygurw4xd4.cloudworkstations.dev");
+    res.header("Access-Control-Allow-Headers", "Content-Type");
+    next();
+});
 // Serve static files
 app.use(express_1.default.static(path_1.default.join(__dirname, '../public')));
 // Routes

@@ -13,7 +13,6 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.db = exports.models = exports.PlaylistTrack = exports.Playlist = exports.LikedSong = exports.Track = exports.User = void 0;
-// /db/models/index.ts
 const config_1 = __importDefault(require("../config"));
 exports.db = config_1.default;
 const bcrypt_1 = __importDefault(require("bcrypt"));

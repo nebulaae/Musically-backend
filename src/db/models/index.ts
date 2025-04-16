@@ -1,7 +1,6 @@
-// /db/models/index.ts
 import db from '../config';
 import bcrypt from 'bcrypt';
-import { DataTypes, Model, Sequelize } from 'sequelize';
+import { DataTypes, Model } from 'sequelize';
 
 // --- User Model ---
 export interface UserAttributes {
