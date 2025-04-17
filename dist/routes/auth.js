@@ -12,13 +12,12 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-// /routes/auth.ts
 const express_1 = __importDefault(require("express"));
-const models_1 = require("../db/models");
+const sequelize_1 = require("sequelize");
 const uuid_1 = require("uuid");
+const models_1 = require("../db/models");
 const auth_1 = require("../middleware/auth");
 const authServices_1 = require("../services/authServices");
-const sequelize_1 = require("sequelize");
 const router = express_1.default.Router();
 // Register new user
 router.post('/register', (req, res) => __awaiter(void 0, void 0, void 0, function* () {
@@ -44,9 +43,10 @@ router.post('/register', (req, res) => __awaiter(void 0, void 0, void 0, functio
         res.cookie('token', token, {
             httpOnly: true,
             secure: process.env.NODE_ENV === 'production',
-            maxAge: 7 * 24 * 60 * 60 * 1000 // 7 days
+            maxAge: 365 * 24 * 60 * 60 * 1000 // 365 days
         });
         return res.status(201).json({
+            token,
             user: {
                 id: user.id,
                 username: user.username,
@@ -70,13 +70,10 @@ router.post('/login', (req, res) => __awaiter(void 0, void 0, void 0, function* 
         const { username, password } = req.body;
         const user = yield models_1.models.User.findOne({ where: { username } });
         if (!user) {
-            // Keep error message generic for security
             return res.status(400).json({ message: 'Invalid credentials' });
         }
-        // comparePassword is an instance method, correctly called
         const isMatch = yield user.comparePassword(password);
         if (!isMatch) {
-            // Keep error message generic for security
             return res.status(400).json({ message: 'Invalid credentials' });
         }
         // Generate JWT token
@@ -85,9 +82,11 @@ router.post('/login', (req, res) => __awaiter(void 0, void 0, void 0, function* 
         res.cookie('token', token, {
             httpOnly: true,
             secure: process.env.NODE_ENV === 'production',
-            maxAge: 7 * 24 * 60 * 60 * 1000 // 7 days
+            maxAge: 365 * 24 * 60 * 60 * 1000 // 365 days
         });
+        // Return token in response body as well
         return res.json({
+            token, // Include token in response
             user: {
                 id: user.id,
                 username: user.username,

@@ -1,10 +1,10 @@
-// /routes/auth.ts
 import express from 'express';
-import { models } from '../db/models';
+
+import { Op } from 'sequelize';
 import { v4 as uuidv4 } from 'uuid';
+import { models } from '../db/models';
 import { auth } from '../middleware/auth';
 import { generateToken } from '../services/authServices';
-import { Op } from 'sequelize';
 
 const router = express.Router();
 
@@ -37,10 +37,11 @@ router.post('/register', async (req: any, res: any) => {
         res.cookie('token', token, {
             httpOnly: true,
             secure: process.env.NODE_ENV === 'production',
-            maxAge: 7 * 24 * 60 * 60 * 1000 // 7 days
+            maxAge: 365 * 24 * 60 * 60 * 1000 // 365 days
         });
 
         return res.status(201).json({
+            token,
             user: {
                 id: user.id,
                 username: user.username,
@@ -65,14 +66,11 @@ router.post('/login', async (req: any, res: any) => {
 
         const user = await models.User.findOne({ where: { username } });
         if (!user) {
-            // Keep error message generic for security
             return res.status(400).json({ message: 'Invalid credentials' });
         }
 
-        // comparePassword is an instance method, correctly called
         const isMatch = await user.comparePassword(password);
         if (!isMatch) {
-            // Keep error message generic for security
             return res.status(400).json({ message: 'Invalid credentials' });
         }
 
@@ -83,10 +81,12 @@ router.post('/login', async (req: any, res: any) => {
         res.cookie('token', token, {
             httpOnly: true,
             secure: process.env.NODE_ENV === 'production',
-            maxAge: 7 * 24 * 60 * 60 * 1000 // 7 days
+            maxAge: 365 * 24 * 60 * 60 * 1000 // 365 days
         });
 
+        // Return token in response body as well
         return res.json({
+            token, // Include token in response
             user: {
                 id: user.id,
                 username: user.username,

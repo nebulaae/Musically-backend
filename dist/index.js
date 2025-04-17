@@ -17,7 +17,6 @@ const path_1 = __importDefault(require("path"));
 const express_1 = __importDefault(require("express"));
 const cookie_parser_1 = __importDefault(require("cookie-parser"));
 const config_1 = __importDefault(require("./db/config"));
-const authServices_1 = require("./services/authServices");
 const trackServices_1 = require("./services/trackServices");
 // Import routes
 const auth_1 = __importDefault(require("./routes/auth"));
@@ -52,15 +51,12 @@ app.use('/api/users', users_1.default);
 app.get('/api/health', (req, res) => {
     res.json({ status: 'ok', time: new Date().toISOString() });
 });
-``;
 // Initialize database and start server
 const startServer = () => __awaiter(void 0, void 0, void 0, function* () {
     try {
         // Sync database models
         yield config_1.default.sync();
         console.log('Database synchronized');
-        // Setup initial user if none exists
-        yield (0, authServices_1.setupInitialUser)();
         // Sync tracks on startup
         yield (0, trackServices_1.syncTracks)();
         // Start the server

@@ -5,7 +5,6 @@ import cookieParser from 'cookie-parser';
 
 import db from './db/config';
 
-import { setupInitialUser } from './services/authServices';
 import { syncTracks } from './services/trackServices';
 
 // Import routes
@@ -47,16 +46,13 @@ app.use('/api/users', userRoutes);
 app.get('/api/health', (req, res) => {
   res.json({ status: 'ok', time: new Date().toISOString() });
 });
-``
+
 // Initialize database and start server
 const startServer = async () => {
   try {
     // Sync database models
     await db.sync();
     console.log('Database synchronized');
-
-    // Setup initial user if none exists
-    await setupInitialUser();
 
     // Sync tracks on startup
     await syncTracks();
