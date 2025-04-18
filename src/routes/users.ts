@@ -1,7 +1,7 @@
+import db from '../db/config';
 import express from 'express';
 import { auth } from '../middleware/auth';
 import { Track, LikedSong } from '../db/models';
-import db from '../db/config';
 
 const router = express.Router();
 
@@ -13,7 +13,7 @@ router.get('/likes', auth, async (req: any, res: any) => {
         const likedSongs = await Track.findAll({
             include: [
                 {
-                    model: db.models.user,
+                    model: db.models.User,
                     as: 'likedByUsers',
                     where: { id: userId },
                     attributes: [],
@@ -25,7 +25,7 @@ router.get('/likes', auth, async (req: any, res: any) => {
         return res.json({ tracks: likedSongs });
     } catch (error) {
         console.error('Error fetching liked songs:', error);
-        return res.status(500).json({ message: 'Server error' });
+        return res.status(500).json({ message: 'Server error', error: error.message });
     }
 });
 
@@ -48,12 +48,13 @@ router.post('/likes/:trackId', auth, async (req: any, res: any) => {
 
         if (!existing) {
             await LikedSong.create({ userId, trackId });
+            return res.json({ message: 'Track liked successfully', track });
+        } else {
+            return res.json({ message: 'Track already liked', track });
         }
-
-        return res.json({ message: 'Track liked successfully' });
     } catch (error) {
         console.error('Error liking track:', error);
-        return res.status(500).json({ message: 'Server error' });
+        return res.status(500).json({ message: 'Server error', error: error.message });
     }
 });
 
@@ -63,14 +64,18 @@ router.delete('/likes/:trackId', auth, async (req: any, res: any) => {
         const userId = req.user.id;
         const { trackId } = req.params;
 
-        await LikedSong.destroy({
+        const result = await LikedSong.destroy({
             where: { userId, trackId }
         });
 
-        return res.json({ message: 'Track unliked successfully' });
+        if (result > 0) {
+            return res.json({ message: 'Track unliked successfully' });
+        } else {
+            return res.json({ message: 'Track was not liked' });
+        }
     } catch (error) {
         console.error('Error unliking track:', error);
-        return res.status(500).json({ message: 'Server error' });
+        return res.status(500).json({ message: 'Server error', error: error.message });
     }
 });
 
@@ -87,7 +92,7 @@ router.get('/likes/:trackId', auth, async (req: any, res: any) => {
         return res.json({ isLiked: !!likedSong });
     } catch (error) {
         console.error('Error checking liked status:', error);
-        return res.status(500).json({ message: 'Server error' });
+        return res.status(500).json({ message: 'Server error', error: error.message });
     }
 });
 

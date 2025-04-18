@@ -41,7 +41,15 @@ async function getCoverFromCache(hash: string, coverFilename: string, imageBuffe
     if (!coverCache[hash]) {
         const coverPath = path.join(process.cwd(), 'public', 'covers');
         await fs.mkdir(coverPath, { recursive: true });
-        await fs.writeFile(path.join(coverPath, coverFilename), imageBuffer);
+
+        // Check if imageBuffer is valid before writing to file
+        if (imageBuffer && imageBuffer.length > 0) {
+            await fs.writeFile(path.join(coverPath, coverFilename), imageBuffer);
+        } else {
+            console.error(`Invalid image buffer for hash ${hash}, using default cover.`);
+            return '/default-cover.jpg'; // Return default cover if buffer is invalid
+        }
+
         coverCache[hash] = `/covers/${coverFilename}`;
         coverCacheTimestamps[hash] = Date.now();
 
@@ -175,7 +183,7 @@ export async function getTracks(options: {
                 { title: { [Op.like]: `%${search}%` } },
                 { author: { [Op.like]: `%${search}%` } },
                 { album: { [Op.like]: `%${search}%` } }
-            ];   
+            ];
         }
 
         const { count, rows } = await Track.findAndCountAll({

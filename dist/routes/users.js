@@ -12,10 +12,10 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
+const config_1 = __importDefault(require("../db/config"));
 const express_1 = __importDefault(require("express"));
 const auth_1 = require("../middleware/auth");
 const models_1 = require("../db/models");
-const config_1 = __importDefault(require("../db/config"));
 const router = express_1.default.Router();
 // Get liked songs
 router.get('/likes', auth_1.auth, (req, res) => __awaiter(void 0, void 0, void 0, function* () {
@@ -24,7 +24,7 @@ router.get('/likes', auth_1.auth, (req, res) => __awaiter(void 0, void 0, void 0
         const likedSongs = yield models_1.Track.findAll({
             include: [
                 {
-                    model: config_1.default.models.user,
+                    model: config_1.default.models.User,
                     as: 'likedByUsers',
                     where: { id: userId },
                     attributes: [],
@@ -36,7 +36,7 @@ router.get('/likes', auth_1.auth, (req, res) => __awaiter(void 0, void 0, void 0
     }
     catch (error) {
         console.error('Error fetching liked songs:', error);
-        return res.status(500).json({ message: 'Server error' });
+        return res.status(500).json({ message: 'Server error', error: error.message });
     }
 }));
 // Like a song
@@ -55,12 +55,15 @@ router.post('/likes/:trackId', auth_1.auth, (req, res) => __awaiter(void 0, void
         });
         if (!existing) {
             yield models_1.LikedSong.create({ userId, trackId });
+            return res.json({ message: 'Track liked successfully', track });
         }
-        return res.json({ message: 'Track liked successfully' });
+        else {
+            return res.json({ message: 'Track already liked', track });
+        }
     }
     catch (error) {
         console.error('Error liking track:', error);
-        return res.status(500).json({ message: 'Server error' });
+        return res.status(500).json({ message: 'Server error', error: error.message });
     }
 }));
 // Unlike a song
@@ -68,14 +71,19 @@ router.delete('/likes/:trackId', auth_1.auth, (req, res) => __awaiter(void 0, vo
     try {
         const userId = req.user.id;
         const { trackId } = req.params;
-        yield models_1.LikedSong.destroy({
+        const result = yield models_1.LikedSong.destroy({
             where: { userId, trackId }
         });
-        return res.json({ message: 'Track unliked successfully' });
+        if (result > 0) {
+            return res.json({ message: 'Track unliked successfully' });
+        }
+        else {
+            return res.json({ message: 'Track was not liked' });
+        }
     }
     catch (error) {
         console.error('Error unliking track:', error);
-        return res.status(500).json({ message: 'Server error' });
+        return res.status(500).json({ message: 'Server error', error: error.message });
     }
 }));
 // Check if a song is liked
@@ -90,7 +98,7 @@ router.get('/likes/:trackId', auth_1.auth, (req, res) => __awaiter(void 0, void 
     }
     catch (error) {
         console.error('Error checking liked status:', error);
-        return res.status(500).json({ message: 'Server error' });
+        return res.status(500).json({ message: 'Server error', error: error.message });
     }
 }));
 exports.default = router;

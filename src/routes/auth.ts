@@ -1,3 +1,4 @@
+// Suggested code may be subject to a license. Learn more: ~LicenseLog:1336984336.
 import express from 'express';
 
 import { Op } from 'sequelize';
@@ -62,9 +63,17 @@ router.post('/register', async (req: any, res: any) => {
 // --- Login Route ---
 router.post('/login', async (req: any, res: any) => {
     try {
-        const { username, password } = req.body;
+        const { usernameOrEmail, password } = req.body;
 
-        const user = await models.User.findOne({ where: { username } });
+        const user = await models.User.findOne({
+            where: {
+                [Op.or]: [
+                    { username: usernameOrEmail },
+                    { email: usernameOrEmail },
+                ],
+            },
+        });
+        
         if (!user) {
             return res.status(400).json({ message: 'Invalid credentials' });
         }

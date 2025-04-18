@@ -77,7 +77,14 @@ function getCoverFromCache(hash, coverFilename, imageBuffer) {
         if (!coverCache[hash]) {
             const coverPath = path_1.default.join(process.cwd(), 'public', 'covers');
             yield promises_1.default.mkdir(coverPath, { recursive: true });
-            yield promises_1.default.writeFile(path_1.default.join(coverPath, coverFilename), imageBuffer);
+            // Check if imageBuffer is valid before writing to file
+            if (imageBuffer && imageBuffer.length > 0) {
+                yield promises_1.default.writeFile(path_1.default.join(coverPath, coverFilename), imageBuffer);
+            }
+            else {
+                console.error(`Invalid image buffer for hash ${hash}, using default cover.`);
+                return '/default-cover.jpg'; // Return default cover if buffer is invalid
+            }
             coverCache[hash] = `/covers/${coverFilename}`;
             coverCacheTimestamps[hash] = Date.now();
             // Clean up cache if it exceeds max size
