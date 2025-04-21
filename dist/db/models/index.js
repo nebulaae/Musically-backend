@@ -144,7 +144,7 @@ Playlist.init({
     userId: {
         type: sequelize_1.DataTypes.UUID,
         references: {
-            model: 'users',
+            model: User,
             key: 'id',
         },
         allowNull: false,
@@ -162,7 +162,7 @@ PlaylistTrack.init({
     playlistId: {
         type: sequelize_1.DataTypes.UUID,
         references: {
-            model: 'playlists',
+            model: Playlist,
             key: 'id',
         },
         primaryKey: true,
@@ -170,7 +170,7 @@ PlaylistTrack.init({
     trackId: {
         type: sequelize_1.DataTypes.STRING,
         references: {
-            model: 'tracks',
+            model: Track,
             key: 'id',
         },
         primaryKey: true,
@@ -181,8 +181,8 @@ PlaylistTrack.init({
     tableName: 'playlist_tracks',
 });
 // --- Define relationships ---
-User.hasMany(Playlist, { foreignKey: 'userId', as: 'playlists' });
-Playlist.belongsTo(User, { foreignKey: 'userId' });
+User.hasMany(Playlist, { foreignKey: 'userId', as: 'playlists', onDelete: 'CASCADE' });
+Playlist.belongsTo(User, { foreignKey: 'userId', as: 'user' });
 User.belongsToMany(Track, { through: LikedSong, foreignKey: 'userId', otherKey: 'trackId', as: 'likedSongs' });
 Track.belongsToMany(User, { through: LikedSong, foreignKey: 'trackId', otherKey: 'userId', as: 'likedByUsers' });
 Playlist.belongsToMany(Track, { through: PlaylistTrack, foreignKey: 'playlistId', otherKey: 'trackId', as: 'tracks' });

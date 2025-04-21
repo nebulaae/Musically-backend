@@ -1,4 +1,3 @@
-// Suggested code may be subject to a license. Learn more: ~LicenseLog:1336984336.
 import express from 'express';
 
 import { Op } from 'sequelize';

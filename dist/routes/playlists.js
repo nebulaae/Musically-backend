@@ -12,7 +12,6 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-// /routes/playlist.ts
 const express_1 = __importDefault(require("express"));
 const auth_1 = require("../middleware/auth");
 const models_1 = require("../db/models");
@@ -24,6 +23,13 @@ router.get('/', auth_1.auth, (req, res) => __awaiter(void 0, void 0, void 0, fun
         const userId = req.user.id;
         const playlists = yield models_1.models.Playlist.findAll({
             where: { userId },
+            include: [
+                {
+                    model: models_1.models.Track,
+                    as: 'tracks',
+                    through: { attributes: [] }
+                }
+            ],
             order: [['createdAt', 'DESC']]
         });
         res.json({ playlists });

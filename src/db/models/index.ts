@@ -197,7 +197,7 @@ Playlist.init(
     userId: {
       type: DataTypes.UUID,
       references: {
-        model: 'users',
+        model: User,
         key: 'id',
       },
       allowNull: false,
@@ -223,7 +223,7 @@ PlaylistTrack.init(
     playlistId: {
       type: DataTypes.UUID,
       references: {
-        model: 'playlists',
+        model: Playlist,
         key: 'id',
       },
       primaryKey: true,
@@ -231,7 +231,7 @@ PlaylistTrack.init(
     trackId: {
       type: DataTypes.STRING,
       references: {
-        model: 'tracks',
+        model: Track,
         key: 'id',
       },
       primaryKey: true,
@@ -245,8 +245,8 @@ PlaylistTrack.init(
 );
 
 // --- Define relationships ---
-User.hasMany(Playlist, { foreignKey: 'userId', as: 'playlists' });
-Playlist.belongsTo(User, { foreignKey: 'userId' });
+User.hasMany(Playlist, { foreignKey: 'userId', as: 'playlists', onDelete: 'CASCADE' });
+Playlist.belongsTo(User, { foreignKey: 'userId', as: 'user' });
 
 User.belongsToMany(Track, { through: LikedSong, foreignKey: 'userId', otherKey: 'trackId', as: 'likedSongs' });
 Track.belongsToMany(User, { through: LikedSong, foreignKey: 'trackId', otherKey: 'userId', as: 'likedByUsers' });

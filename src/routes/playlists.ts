@@ -1,4 +1,3 @@
-// /routes/playlist.ts
 import express from 'express';
 import { auth } from '../middleware/auth';
 import { models } from '../db/models';
@@ -13,6 +12,13 @@ router.get('/', auth, async (req, res) => {
 
         const playlists = await models.Playlist.findAll({
             where: { userId },
+            include: [
+                {
+                    model: models.Track,
+                    as: 'tracks',
+                    through: { attributes: [] }
+                }
+            ],
             order: [['createdAt', 'DESC']]
         });
 
