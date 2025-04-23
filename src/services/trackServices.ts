@@ -195,7 +195,6 @@ export async function getTracks(options: {
 
         return {
             tracks: rows,
-            total: count,
             page,
             limit,
             totalPages: Math.ceil(count / limit)

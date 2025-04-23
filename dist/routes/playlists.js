@@ -13,11 +13,11 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 const express_1 = __importDefault(require("express"));
-const auth_1 = require("../middleware/auth");
-const models_1 = require("../db/models");
 const uuid_1 = require("uuid");
+const models_1 = require("../db/models");
+const auth_1 = require("../middleware/auth");
 const router = express_1.default.Router();
-// Get all playlists for current user
+// Get all playlists
 router.get('/', auth_1.auth, (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const userId = req.user.id;
@@ -32,7 +32,13 @@ router.get('/', auth_1.auth, (req, res) => __awaiter(void 0, void 0, void 0, fun
             ],
             order: [['createdAt', 'DESC']]
         });
-        res.json({ playlists });
+        // Type assertion for the plain objects
+        const transformedPlaylists = playlists.map(playlist => {
+            var _a;
+            const plainPlaylist = playlist.get({ plain: true });
+            return Object.assign(Object.assign({}, plainPlaylist), { tracks: (_a = plainPlaylist.tracks) === null || _a === void 0 ? void 0 : _a.map(track => (Object.assign(Object.assign({}, track), { src: `/api/tracks/stream/${track.id}` }))) });
+        });
+        res.json({ playlists: transformedPlaylists });
     }
     catch (error) {
         console.error('Error fetching playlists:', error);
@@ -61,27 +67,27 @@ router.post('/', auth_1.auth, (req, res) => __awaiter(void 0, void 0, void 0, fu
 }));
 // Get a playlist with its tracks
 router.get('/:id', auth_1.auth, (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    var _a;
     try {
         const userId = req.user.id;
         const { id } = req.params;
         const playlist = yield models_1.models.Playlist.findOne({
-            where: { id, userId }
-        });
-        if (!playlist) {
-            return res.status(404).json({ message: 'Playlist not found' });
-        }
-        const tracks = yield models_1.models.Track.findAll({
+            where: { id, userId },
             include: [
                 {
-                    model: models_1.models.Playlist,
-                    as: 'playlists',
-                    where: { id },
-                    attributes: [],
+                    model: models_1.models.Track,
+                    as: 'tracks',
                     through: { attributes: [] }
                 }
             ]
         });
-        res.json({ playlist, tracks });
+        if (!playlist) {
+            return res.status(404).json({ message: 'Playlist not found' });
+        }
+        // Type assertion for the plain object
+        const plainPlaylist = playlist.get({ plain: true });
+        const transformedPlaylist = Object.assign(Object.assign({}, plainPlaylist), { tracks: (_a = plainPlaylist.tracks) === null || _a === void 0 ? void 0 : _a.map(track => (Object.assign(Object.assign({}, track), { src: `/api/tracks/stream/${track.id}` }))) });
+        return res.json({ playlist: transformedPlaylist });
     }
     catch (error) {
         console.error('Error fetching playlist:', error);

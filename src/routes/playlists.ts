@@ -1,11 +1,11 @@
 import express from 'express';
-import { auth } from '../middleware/auth';
-import { models } from '../db/models';
 import { v4 as uuidv4 } from 'uuid';
+import { models } from '../db/models';
+import { auth } from '../middleware/auth';
 
 const router = express.Router();
 
-// Get all playlists for current user
+// Get all playlists
 router.get('/', auth, async (req, res) => {
     try {
         const userId = req.user.id;
@@ -22,7 +22,20 @@ router.get('/', auth, async (req, res) => {
             order: [['createdAt', 'DESC']]
         });
 
-        res.json({ playlists });
+        type PlaylistWithTracks = any;
+        // Type assertion for the plain objects
+        const transformedPlaylists = playlists.map(playlist => {
+            const plainPlaylist = playlist.get({ plain: true }) as PlaylistWithTracks;
+            return {
+                ...plainPlaylist,
+                tracks: plainPlaylist.tracks?.map(track => ({
+                    ...track,
+                    src: `/api/tracks/stream/${track.id}`
+                }))
+            };
+        });
+
+        res.json({ playlists: transformedPlaylists });
     } catch (error) {
         console.error('Error fetching playlists:', error);
         res.status(500).json({ message: 'Server error' });
@@ -59,26 +72,32 @@ router.get('/:id', auth, async (req: any, res: any) => {
         const { id } = req.params;
 
         const playlist = await models.Playlist.findOne({
-            where: { id, userId }
+            where: { id, userId },
+            include: [
+                {
+                    model: models.Track,
+                    as: 'tracks',
+                    through: { attributes: [] }
+                }
+            ]
         });
 
         if (!playlist) {
             return res.status(404).json({ message: 'Playlist not found' });
         }
 
-        const tracks = await models.Track.findAll({
-            include: [
-                {
-                    model: models.Playlist,
-                    as: 'playlists',
-                    where: { id },
-                    attributes: [],
-                    through: { attributes: [] }
-                }
-            ]
-        });
+        type PlaylistWithTracks = any;
+        // Type assertion for the plain object
+        const plainPlaylist = playlist.get({ plain: true }) as PlaylistWithTracks;
+        const transformedPlaylist = {
+            ...plainPlaylist,
+            tracks: plainPlaylist.tracks?.map(track => ({
+                ...track,
+                src: `/api/tracks/stream/${track.id}`
+            }))
+        };
 
-        res.json({ playlist, tracks });
+        return res.json({ playlist: transformedPlaylist });
     } catch (error) {
         console.error('Error fetching playlist:', error);
         res.status(500).json({ message: 'Server error' });

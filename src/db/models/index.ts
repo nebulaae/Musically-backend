@@ -216,6 +216,9 @@ export class PlaylistTrack extends Model {
   public trackId!: string;
   public readonly createdAt!: Date;
   public readonly updatedAt!: Date;
+
+  // Add association typings
+  public tracks?: Track[];
 }
 
 PlaylistTrack.init(
