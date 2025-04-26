@@ -22,6 +22,9 @@ router.get('/', auth, async (req, res) => {
             order: [['createdAt', 'DESC']]
         });
 
+        // TOTAL PLAYLISTS
+        const totalPlaylists = playlists.length;
+
         type PlaylistWithTracks = any;
         // Type assertion for the plain objects
         const transformedPlaylists = playlists.map(playlist => {
@@ -35,7 +38,10 @@ router.get('/', auth, async (req, res) => {
             };
         });
 
-        res.json({ playlists: transformedPlaylists });
+        res.json({ 
+            playlists: transformedPlaylists,
+            total: totalPlaylists,
+        });
     } catch (error) {
         console.error('Error fetching playlists:', error);
         res.status(500).json({ message: 'Server error' });

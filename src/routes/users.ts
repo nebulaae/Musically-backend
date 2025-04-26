@@ -21,8 +21,21 @@ router.get('/likes', auth, async (req: any, res: any) => {
                 }
             ]
         });
+        
+        // GET TOTAL LIKED SONGS
+        const totalLikedSongs = likedSongs.length;
 
-        return res.json({ tracks: likedSongs });
+        // ---- START TRANSFORMATION ----
+        // Modify the 'src' property of each track to point to the streaming endpoint
+        const transformedTracks = likedSongs.map(track => ({
+            ...track.get({ plain: true }), // Get plain object from Sequelize model instance
+            src: `/api/tracks/stream/${track.id}` // Construct the streaming URL
+        }));
+
+        return res.json({
+            tracks: transformedTracks,
+            total: totalLikedSongs
+        });
     } catch (error) {
         console.error('Error fetching liked songs:', error);
         return res.status(500).json({ message: 'Server error', error: error.message });

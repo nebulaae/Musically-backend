@@ -1,3 +1,5 @@
+// Suggested code may be subject to a license. Learn more: ~LicenseLog:2493378367.
+// Suggested code may be subject to a license. Learn more: ~LicenseLog:505570613.
 import cors from 'cors';
 import path from 'path';
 import express from 'express';
@@ -18,20 +20,16 @@ const app = express();
 const PORT = process.env.PORT || 3002;
 
 // Middleware
-app.use(cors({
-  origin: process.env.FRONTEND_URL || 'https://3000-idx-musically-1743873794879.cluster-oayqgyglpfgseqclbygurw4xd4.cloudworkstations.dev',
-  credentials: true
-}));
+app.use(
+  cors({
+    origin: "*",
+    credentials: true,
+  })
+);
+
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
-
-// CORS
-app.use((req, res, next) => {
-  res.header("Access-Control-Allow-Origin", "https://3000-idx-musically-1743873794879.cluster-oayqgyglpfgseqclbygurw4xd4.cloudworkstations.dev");
-  res.header("Access-Control-Allow-Headers", "Content-Type");
-  next();
-});
 
 // Serve static files
 app.use(express.static(path.join(__dirname, '../public')));

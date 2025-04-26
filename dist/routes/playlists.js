@@ -32,13 +32,18 @@ router.get('/', auth_1.auth, (req, res) => __awaiter(void 0, void 0, void 0, fun
             ],
             order: [['createdAt', 'DESC']]
         });
+        // TOTAL PLAYLISTS
+        const totalPlaylists = playlists.length;
         // Type assertion for the plain objects
         const transformedPlaylists = playlists.map(playlist => {
             var _a;
             const plainPlaylist = playlist.get({ plain: true });
             return Object.assign(Object.assign({}, plainPlaylist), { tracks: (_a = plainPlaylist.tracks) === null || _a === void 0 ? void 0 : _a.map(track => (Object.assign(Object.assign({}, track), { src: `/api/tracks/stream/${track.id}` }))) });
         });
-        res.json({ playlists: transformedPlaylists });
+        res.json({
+            playlists: transformedPlaylists,
+            total: totalPlaylists,
+        });
     }
     catch (error) {
         console.error('Error fetching playlists:', error);

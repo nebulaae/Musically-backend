@@ -32,7 +32,16 @@ router.get('/likes', auth_1.auth, (req, res) => __awaiter(void 0, void 0, void 0
                 }
             ]
         });
-        return res.json({ tracks: likedSongs });
+        // GET TOTAL LIKED SONGS
+        const totalLikedSongs = likedSongs.length;
+        // ---- START TRANSFORMATION ----
+        // Modify the 'src' property of each track to point to the streaming endpoint
+        const transformedTracks = likedSongs.map(track => (Object.assign(Object.assign({}, track.get({ plain: true })), { src: `/api/tracks/stream/${track.id}` // Construct the streaming URL
+         })));
+        return res.json({
+            tracks: transformedTracks,
+            total: totalLikedSongs
+        });
     }
     catch (error) {
         console.error('Error fetching liked songs:', error);
